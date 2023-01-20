@@ -8,10 +8,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import mx.unam.sa.serviciorest.services.Documentos;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/")
 public class InicialController {
+    
+    @Autowired
+    Documentos documento;
 
     @GetMapping
     public ResponseEntity<String> inicial() {
@@ -79,12 +85,7 @@ public class InicialController {
 
 
         try {
-            FileInputStream fileInputStream = new FileInputStream("C:/temp/test.pdf");
-            int fileSize = fileInputStream.available();
-            byte[] fileData = new byte[fileSize];
-            fileInputStream.read(fileData);
-            ByteArrayInputStream bis = new ByteArrayInputStream(fileData);
-            fileInputStream.close();
+            ByteArrayInputStream docto = documento.getDocumento();
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "inline; filename=test.pdf");
@@ -93,9 +94,11 @@ public class InicialController {
                     .ok()
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_PDF)
-                    .body(new InputStreamResource(bis));
+                    .body(new InputStreamResource(docto));
         } catch (IOException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception ex) {
+             return ResponseEntity.notFound().build();
         }
 
     }
